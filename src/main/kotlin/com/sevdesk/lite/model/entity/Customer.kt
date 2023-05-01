@@ -1,4 +1,4 @@
-package com.sevdesk.lite.invoice.entity
+package com.sevdesk.lite.model.entity
 
 import javax.persistence.Column
 import javax.persistence.Entity

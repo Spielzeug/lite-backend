@@ -1,4 +1,4 @@
-package com.sevdesk.lite.invoice.entity
+package com.sevdesk.lite.model.entity
 
 import java.math.BigDecimal
 import java.time.LocalDate
