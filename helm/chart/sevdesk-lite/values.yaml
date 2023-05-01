@@ -1,0 +1,16 @@
+name: sevdesk-backend
+namespace: lite
+imageName: lite/backend:latest
+domain: lite
+
+resources:
+  limits:
+    cpu: "0.25"
+    memory: "1000Mi"
+  requests:
+    cpu: "0.25"
+    memory: "500Mi"
+
+replicas: 2
+
+# Further configuration for prometheus, forecastle, liveness and readiness probes, etc.

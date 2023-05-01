@@ -1,0 +1,19 @@
+{{- $name:= required "name required!" .Values.name -}}
+{{- $namespace:= required "namespace required!" .Values.namespace -}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ $name }}-service"
+  namespace: {{ $namespace | quote }}
+  # add annotations for prometheus
+spec:
+  selector:
+    app: {{ $name | quote }}
+    tier: backend
+    track: stable
+  ports:
+    - name: "backend-port"
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP

@@ -1,0 +1,39 @@
+{{- $name:= required "name required!" .Values.name -}}
+{{- $namespace:= required "namespace required!" .Values.namespace -}}
+{{- $imageName:= required "imageName required!" .Values.imageName -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name | quote }}
+  namespace: {{ $namespace | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $name | quote }}
+      tier: backend
+      track: stable
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name | quote }}
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: {{ $name | quote }}
+          image: {{ $imageName | quote }}
+          imagePullPolicy: Never
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          ports:
+            - name: "backend-port"
+              containerPort: 8081
+          # Further configuration for liveness and readiness probes, etc.
+---

@@ -1,0 +1,26 @@
+{{- $name:= required "name required!" .Values.name -}}
+  {{- $namespace:= required "namespace required!" .Values.namespace -}}
+  {{- $domain:= required "domain required!" .Values.domain -}}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "{{ $name }}-ingress"
+  namespace: {{ $namespace | quote }}
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: sevdesk-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: Authentification Required - sevDesk Lite
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "{{ $name }}.{{ $domain }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "{{ $name }}-service"
+                port:
+                  number: 8081
