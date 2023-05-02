@@ -1,45 +1,34 @@
 # sevDesk Lite - Backend
 
 ### Setup
-prerequisites: installed Java 17 runtime
+prerequisites: installed Java 17 runtime, minikube, kubectl, helm, docker
 
+### To run on localhost:8081
 - Navigate to the backend directory: `cd ./lite`
 - Install the dependencies: `./gradlew build`
 - Start the application by running: `./gradlew bootRun`
+### To run on minikube (or your cluster)
+- build docker images and push them to minikube (or your cluster) docker registry
+- install helm chart provided in helm/chart/sevdesk-lite
+- optionally install helm chart for frontend as well
+- run minikube ip and add it to your hosts file to resolve to sevdesk-backend.lite
+- alternatively you can set up ingress-dns addon for minikube
+- login with admin:changeme
 
 ## Exercises
 - **"Tests, where?"** - `quality`
-  - Maybe it's a good idea to have some tests before you change something
+  - Added test, they are sadly not exhaustive, since I was focused on different tasks and it didn't make sense to write tests before I restructured the application
 - **"Where is my Invoice?"** - `database`
-  - Do you really think it's a good idea to just remove an invoice?
-  - If yes, what's happening with the customer?
-  - If no, why don't you prevent it?
-- **"You talk in riddles"** - `feature`
-  - Should it be possible to create an invoice with negative price?
-  - or was the due date perhaps already yesterday?
-- **"Give me all your money"** - `feature`
-  - write an endpoint to mark an invoice paid
-  - I also want to know when this happened
-  - What if I don't pay the whole bill?
-- **"1+1=5"** - `feature`
-  - Some values should not be set from outside!
-  - It's better to calculate some values  e.g. a total price
-  - Don't you want to safe that total price?
-- **"I am curious"** - `feature`
-  - I think it would be interesting to see who changed the data and when
-  - Could this be a solution, that fits all tables at once
-  - Would a rollback be nice as well?
+  - This task no longer possible, since I made invoices append only. Removing invoice is for sure not a good idea
 - **"Fast Forward"** - `feature`
-  - Some data really should never be changed anymore. Make the Invoices an append-only data structure where every change results in a new dataset which is linked to the previous version
+  - I implemented append only for invoices with oneToOne mapping in Invoices entity, PRECEDING_INVOICE_ID as join column and update logic in InvoiceService 
 - **"these are not the droids you're looking for"** - `security`
-  - it should be obvious, that it's a bad idea to let everyone see your invoices
-  - implement some basic authorization and authentication to protect the API from unauthorized users
+  - I added basic auth as part of the ingress deployment. Overall if the API is only used by cluster-internal services, I would not add any auth. For apis and services accessible from outside I would consider using external auth provider configured in ingress 
 - **"This building looks weird"** - `architecture`
-  - Is everything where it is supposed to be?
-  - What are considerations to change the projects structure?
+  - I modified the architecture to horizontal layers rather then vertical, use-case based ones. In this process I also restified the controllers as well as decoupled entities from controller by introducing DTOs and mapping with mapStruct 
 - **"I have my head in the clouds"** - `feature`
-  - Everything runs on Docker today, don't it?
-  - Wouldn't it be nice if frontend and backend runs on a single cluster-environment, so that you can talk to it as a single application?
+  - I added dockerfile to both frontend and backend. They build images that I use in my deployments. Both are running fine, but on the frontend side I couldn't find which configuration leads to service to refuse connections. Originally I planned to have an ingress secured with basic auth routing to frontend service which in turn would send requests to backend. Sadly I couldn't figure it out in the short time and decided to add basic auth secured ingress that would route requests to backend service. 
+  - As far as talking to it as single application, I would prefer 2 ingresses, so I can use api and frontend separately
 
 ### Troubleshooting and Hints
 - If you use IntelliJ find in `src/test/demo.http` a few requests to quick check the functionality and to generate a first few invoices in your local DB
