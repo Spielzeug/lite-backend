@@ -3,44 +3,32 @@ package com.sevdesk.lite.model.entity
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import javax.persistence.CascadeType
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.ManyToOne
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "INVOICES")
-class Invoice {
+data class Invoice(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    var id: Long? = null
-
+    val id: Long? = null,
     @Column(name = "status", length = 50)
-    var status: String? = null
-
+    val status: String = "OPEN",
     @Column(name = "creation_date")
-    var creationDate: OffsetDateTime? = null
-
+    val creationDate: OffsetDateTime,
     @Column(name = "due_date")
-    var dueDate: LocalDate? = null
-
+    val dueDate: LocalDate,
     @Column(name = "invoice_number")
-    var invoiceNumber: String? = null
-
+    val invoiceNumber: String,
     @Column(name = "quantity")
-    var quantity: BigDecimal? = null
-
+    val quantity: BigDecimal = 0.toBigDecimal(),
     @Column(name = "price_net")
-    var priceNet: BigDecimal? = null
-
+    val priceNet: BigDecimal = 0.toBigDecimal(),
     @Column(name = "price_gross")
-    var priceGross: BigDecimal? = null
-
+    val priceGross: BigDecimal = 0.toBigDecimal(),
     @ManyToOne(cascade = [CascadeType.ALL])
-    var customer: Customer? = null
-}
+    var customer: Customer,
+    @OneToOne
+    @JoinColumn(name = "previous_invoice_id")
+    var precedingInvoice: Invoice? = null
+
+)

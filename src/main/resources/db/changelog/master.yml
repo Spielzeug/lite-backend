@@ -5,5 +5,7 @@ databaseChangeLog:
   - include:
       relativeToChangelogFile: true
       file: v0.1.sql
-
+  - include:
+      relativeToChangelogFile: true
+      file: v0.2.sql
 

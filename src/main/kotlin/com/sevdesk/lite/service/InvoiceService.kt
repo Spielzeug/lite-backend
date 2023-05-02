@@ -1,40 +1,51 @@
 package com.sevdesk.lite.service
 
 import com.sevdesk.lite.model.dto.InvoiceDto
-import com.sevdesk.lite.model.entity.Invoice
-import org.springframework.stereotype.Service
+import com.sevdesk.lite.model.mapper.InvoiceMapper
 import com.sevdesk.lite.repository.InvoiceRepository
-import org.modelmapper.ModelMapper
-import java.time.OffsetDateTime
+import org.springframework.stereotype.Service
+import javax.persistence.EntityNotFoundException
 
 @Service
 class InvoiceService(
     private val invoiceRepository: InvoiceRepository,
-    private val modelMapper: ModelMapper
+    private val invoiceMapper: InvoiceMapper
 ) {
 
-    fun getAllInvoices(): List<InvoiceDto> = invoiceRepository
+    fun getAllInvoices(): Result<List<InvoiceDto>> = Result.success(invoiceRepository
         .findAll()
-        .map { modelMapper.map(it, InvoiceDto::class.java) }
-
-    fun getInvoice(id: Long): InvoiceDto = modelMapper.map(
-        invoiceRepository
-            .findById(id)
-            .orElseGet { Invoice() },
-        InvoiceDto::class.java
+        .map { invoiceMapper.toDto(it) }
     )
 
-    fun saveInvoice(
-        invoice: InvoiceDto
-    ): InvoiceDto {
-        val invoiceEntity = modelMapper.map(invoice, Invoice::class.java)
-        invoiceEntity.creationDate = OffsetDateTime.now()
-
-        return modelMapper.map(
-            invoiceRepository.save(invoiceEntity),
-            InvoiceDto::class.java
+    fun getInvoice(id: Long): Result<InvoiceDto> = Result.runCatching {
+            invoiceMapper.toDto(invoiceRepository
+                .findById(id)
+                .orElseThrow { EntityNotFoundException(id.toString()) },
         )
     }
 
-    fun deleteById(id: Long) = invoiceRepository.deleteById(id)
+    fun saveInvoice(
+        invoice: InvoiceDto
+    ): Result<InvoiceDto> {
+        val invoiceEntity = invoiceMapper.toEntity(invoice)
+
+        return Result.runCatching {
+            invoiceMapper.toDto(
+                invoiceRepository.save(invoiceEntity)
+            )
+        }
+    }
+
+    fun updateInvoice(id: Long, invoice: InvoiceDto) =
+        Result.runCatching {
+            getInvoice(id).fold(
+                {
+                    val newInvoiceEntity = invoiceMapper.toEntity(invoice)
+                    newInvoiceEntity.precedingInvoice = invoiceMapper.toEntity(it)
+                    invoiceMapper.toDto(invoiceRepository.save(newInvoiceEntity))
+                }
+            ) {
+                throw it
+            }
+        }
 }

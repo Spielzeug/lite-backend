@@ -9,15 +9,12 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "CUSTOMERS")
-class Customer {
+data class Customer(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    var id: Long? = null
-
+    var id: Long? = null,
     @Column(name = "givenname")
-    var givenname: String? = null
-
+    var givenname: String = "",
     @Column(name = "surname")
-    var surname: String? = null
-}
+    var surname: String = ""
+)
